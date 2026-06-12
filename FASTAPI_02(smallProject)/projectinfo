@@ -1,0 +1,10 @@
+Project Info
+
+We are about to make 5 APIs.
+
+API names:
+/create
+/view
+/view/patientid
+/update/patientid
+/delete/patientid
