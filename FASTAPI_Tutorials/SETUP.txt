@@ -1,0 +1,26 @@
+FASTAPI Setup
+
+1. Create the virtual environment if needed:
+   python3 -m venv myenv
+
+2. Activate it on Linux/macOS:
+   source myenv/bin/activate
+
+3. Install the required packages:
+   pip install fastapi uvicorn
+
+4. Run the app from this folder:
+   uvicorn main:app --reload (here the benefit of writing reload is "Whenever you save changes to your code, 
+   Uvicorn automatically restarts the server and loads the updated code. This means you don't need to stop 
+   and start the server manually during development.")
+
+5. Open the server in your browser:
+   http://127.0.0.1:8000
+
+6. Check the API docs:
+   http://127.0.0.1:8000/docs
+
+Notes:
+- The main app file is main.py.
+- The app object is named app.
+- Routes available right now are / and /about.
