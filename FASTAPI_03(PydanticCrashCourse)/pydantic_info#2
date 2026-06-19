@@ -1,0 +1,55 @@
+### How Pydantic Works
+
+**1. Define a Pydantic Model (Schema)**
+
+* Create a class that describes the structure of your data.
+* Specify the required fields, their data types, and any validation rules.
+
+**Example:**
+
+```python
+class User(BaseModel):
+    name: str
+    age: int
+```
+
+---
+
+**2. Create an Object Using Input Data**
+
+* Pass input data (usually a Python dictionary or JSON data) to the model.
+* Pydantic automatically validates the data and converts it to the correct Python types when possible.
+* If the data does not satisfy the model requirements, Pydantic raises a `ValidationError`.
+
+**Example 1 (Direct Values):**
+
+```python
+user = User(name="Hamza", age=20)
+```
+
+**Example 2 (Dictionary Data):**
+
+```python
+data = {
+    "name": "Hamza",
+    "age": 20
+}
+
+user = User(**data)
+```
+
+---
+
+**3. Use the Validated Object in Your Application**
+
+* After validation, use the model object throughout your code.
+* This ensures that your application works with clean, type-safe, and validated data.
+
+**Example:**
+
+```python
+print(user.name)
+print(user.age)
+```
+
+**Result:** The data is validated once by Pydantic, so you don't need to repeatedly write manual type checks and validation logic throughout your code.
