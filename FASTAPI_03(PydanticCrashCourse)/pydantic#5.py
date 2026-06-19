@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, HttpUrl, Field
+from pydantic import BaseModel, EmailStr, HttpUrl, Field, field_validator
 from typing import List, Dict, Optional, Annotated
 
 # now for data validation like custom data validation like age btw 0,60, so pydantic gives us Field function , can work on numerical data types as well as on string, it can also be used to add metadata.
@@ -9,38 +9,46 @@ class Patient(BaseModel):
     # In some cases, some fields can be required and some can be optiona
 
     # Type validation
-    # name: str = Field(max_length=60)  # means name max length can be 60 char
-    name: Annotated[
-        str,
-        Field(
-            max_length=50,
-            title="Name of the patient",
-            description="enter name of patient less than 50 characters",
-            examples=["Inshal", "Hamza"],
-        ),
-    ]
+    name: str
     email: EmailStr
     linkedIn: HttpUrl
-    age: int = Field(gt=0, le=60)
+    age: int
     # weight: float = Field(gt=0)
-    weight: Annotated[
-        float, Field(gt=0, strict=True)
-    ]  # strict=True tells Pydantic to accept only a real float value (e.g., 75.2) and reject strings like "75.2" instead of automatically converting them.
+    weight: float
     married: bool
 
-    # We use List[str] instead of just list so Pydantic can validate
-    # that every item inside the list is a string.
-    allergies: Optional[List[str]] = Field(
-        default=None,
-        description="list of Patient allergies",
-        max_length=5,
-    )
-
-    # We use Dict[str, str] instead of just dict so Pydantic can validate
-    # that all keys are strings and all values are strings.
+    allergies: Optional[List[str]] = None
     contact_det: Dict[str, str]
 
     # data validation can also be done here
+
+    @field_validator("name")
+    @classmethod
+    def transform_name(cls, name):
+        return name.upper()
+
+    @field_validator("email")
+    @classmethod
+    def email_validator(cls, value):
+        valid_domain = ["hdfc.com", "icici.com"]
+        # abc@gmail.com
+        domain_name = value.split("@")[-1]
+
+        if domain_name not in valid_domain:
+            raise ValueError("Not a valid domain")
+
+        return value
+
+    @field_validator(
+        "age", mode="before"
+    )  # before means run this field validator before type validation, "after"
+    # does it's opposite
+    @classmethod
+    def age_valid(cls, val):
+        if 0 < val < 100:
+            return val
+        else:
+            raise ValueError("put age value btw 0 and 100")
 
 
 def insert_into_data3(patient: Patient):
@@ -48,6 +56,7 @@ def insert_into_data3(patient: Patient):
     print("age: ", patient.age)
     print("weight: ", patient.weight)
     print("married: ", patient.married)
+    print("email: ", patient.email)
     # print("allergies:", ", ".join(patient.allergies))
 
     print("allergies:", patient.allergies)
@@ -58,7 +67,8 @@ def insert_into_data3(patient: Patient):
 # step2: now make pydantic object
 Patient_info = {
     "name": "inshal",
-    "email": "inshal@gmail.com",
+    "email": "inshal@hdfc.com",
+    # "email": "inshal@gmail.com",
     "linkedIn": "http://linkedicom/12",
     "age": 60,
     "weight": 75.2,

@@ -53,3 +53,214 @@ print(user.age)
 ```
 
 **Result:** The data is validated once by Pydantic, so you don't need to repeatedly write manual type checks and validation logic throughout your code.
+
+
+
+#---------------
+Suppose you have:
+
+data = {
+    "name": "Hamza",
+    "age": 20
+}
+
+and your model is:
+
+User(name="Hamza", age=20)
+
+The ** operator unpacks the dictionary and converts:
+
+User(**data)
+
+into:
+
+User(name="Hamza", age=20)
+
+So ** simply means:
+
+"Take all key-value pairs from the dictionary and pass them as named arguments."
+
+
+=====================================
+.join() is used to combine multiple strings into one string.
+
+Example:
+
+allergies = ["Dust", "Milk", "Peanuts"]
+
+result = ", ".join(allergies)
+
+print(result)
+
+Output:
+
+Dust, Milk, Peanuts
+How it works
+", ".join(allergies)
+
+means:
+
+"Take every item from allergies and join them together using ", " between them."
+
+So Python does:
+
+Dust + ", " + Milk + ", " + Peanuts
+
+Result:
+
+Dust, Milk, Peanuts
+
+==================================
+
+Yes.
+
+Both `AnyUrl` and `HttpUrl` mainly perform **format validation**, not **website existence validation**.
+
+### `AnyUrl`
+
+```python id="9mcl3f"
+from pydantic import AnyUrl
+```
+
+Accepts many URL schemes:
+
+```python id="ajm0dx"
+ftp://example.com
+https://google.com
+http://abcxyz
+```
+
+As long as the URL format is valid.
+
+---
+
+### `HttpUrl`
+
+```python id="s63mxw"
+from pydantic import HttpUrl
+```
+
+More restrictive:
+
+correct `http://example.com`
+
+correct `https://example.com`
+
+wrong `ftp://example.com`
+
+But it still does **not** check whether the website exists.
+
+---
+
+### Simple Rule
+
+* `AnyUrl` → Checks URL format, allows many schemes.
+* `HttpUrl` → Checks URL format, only allows HTTP/HTTPS.
+* Neither checks whether the website actually exists or is reachable.
+
+To verify existence, you'd need to make an actual request to the URL using a library like `requests`.
+
+
+=========================================
+
+
+from typing import Annotated
+from pydantic import Field
+
+name: Annotated[
+    str,
+    Field(
+        max_length=60,
+        title="Patient Name",
+        description="Patient full name"
+    )
+]
+
+It scales better when you add lots of metadata and validators.
+
+Short Answer
+Field() alone is enough.
+Annotated is not required.
+Annotated is the newer, recommended way in Pydantic v2 because it keeps the type (str) separate from the validation metadata (Field(...)).
+=========================================
+### What is `@field_validator`?
+
+`@field_validator` is used when the built-in validations (`gt`, `max_length`, etc.) are not enough and you want to write your **own custom validation logic** for a field.
+
+### Small Example
+
+```python
+from pydantic import BaseModel, field_validator
+
+class Patient(BaseModel):
+    name: str
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, value):
+        if len(value) < 3:
+            raise ValueError("Name must be at least 3 characters long")
+        return value
+```
+
+### How it works
+
+When someone creates an object:
+
+```python
+patient = Patient(name="Al")
+```
+
+Pydantic will automatically call:
+
+```python
+validate_name("Al")
+```
+
+Since the name length is less than 3, it raises an error.
+
+### Simple One-Line Definition
+
+**`@field_validator` lets you write custom validation rules for a specific field before the object is created.**
+=========================================
+
+in Pydantic 2.12+, it should be an instance method.
+
+Change this:
+
+@model_validator(mode="after")
+def validate_emergency_contact(cls, model):
+    if model.age > 60 and "emergency" not in model.contact_det:
+        raise ValueError("Patients older than 60 must have an emergency contact")
+    return model
+
+to:
+
+@model_validator(mode="after")
+def validate_emergency_contact(self):
+    if self.age > 60 and "emergency" not in self.contact_det:
+        raise ValueError("Patients older than 60 must have an emergency contact")
+    return self
+Simple understanding
+field_validator → validates one field.
+model_validator → validates multiple fields together.
+
+Example:
+
+if self.age > 60 and "emergency" not in self.contact_det:
+
+Here you're checking both:
+
+age
+contact_det
+
+So model_validator is the correct choice. 
+
+Also, your comment is good. You can simplify it to:
+
+# field_validator validates a single field.
+# model_validator is used when validation depends on multiple fields.
+
+That's exactly what's happening in your example.
+
+=========================================
