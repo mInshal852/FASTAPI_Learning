@@ -8,3 +8,363 @@ API names:
 /view/patientid
 /update/patientid
 /delete/patientid
+
+
+----------------------------------
+
+Let's put everything together again in the simplest way.
+
+### Code
+
+```python
+data = {
+    "P001": {"name": "Ali", "height": 170, "weight": 70, "bmi": 24},
+    "P002": {"name": "Ahmed", "height": 180, "weight": 80, "bmi": 25},
+    "P003": {"name": "Sameed", "height": 160, "weight": 60, "bmi": 23}
+}
+
+sort_by = "height"
+
+sorted_data = sorted(
+    data.values(),
+    key=lambda x: x.get(sort_by, 0)
+)
+
+print(sorted_data)
+```
+
+---
+
+### Step 1
+
+```python
+data.values()
+```
+
+returns:
+
+```python
+[
+    {"name": "Ali", "height": 170, "weight": 70, "bmi": 24},
+    {"name": "Ahmed", "height": 180, "weight": 80, "bmi": 25},
+    {"name": "Sameed", "height": 160, "weight": 60, "bmi": 23}
+]
+```
+
+---
+
+### Step 2
+
+```python
+lambda x: x.get(sort_by, 0)
+```
+
+means:
+
+```text
+Take one record at a time and get the value of sort_by.
+```
+
+Equivalent to:
+
+```python
+def get_value(x):
+    return x.get(sort_by, 0)
+```
+
+---
+
+### Step 3
+
+Python processes each record.
+
+#### First Record
+
+```python
+x = {"name": "Ali", "height": 170, "weight": 70, "bmi": 24}
+```
+
+```python
+x.get("height", 0)
+```
+
+Result:
+
+```python
+170
+```
+
+---
+
+#### Second Record
+
+```python
+x = {"name": "Ahmed", "height": 180, "weight": 80, "bmi": 25}
+```
+
+```python
+x.get("height", 0)
+```
+
+Result:
+
+```python
+180
+```
+
+---
+
+#### Third Record
+
+```python
+x = {"name": "Sameed", "height": 160, "weight": 60, "bmi": 23}
+```
+
+```python
+x.get("height", 0)
+```
+
+Result:
+
+```python
+160
+```
+
+---
+
+### Step 4
+
+Python now has:
+
+```text
+Ali     → 170
+Ahmed   → 180
+Sameed  → 160
+```
+
+and sorts using those values:
+
+```text
+160
+170
+180
+```
+
+---
+
+### What does `.get()` mean?
+
+```python
+dictionary.get(key, default)
+```
+
+Examples:
+
+```python
+student = {
+    "name": "Ali",
+    "height": 170
+}
+```
+
+```python
+student.get("height", 0)
+```
+
+Output:
+
+```python
+170
+```
+
+because height exists.
+
+---
+
+```python
+student.get("age", 0)
+```
+
+Output:
+
+```python
+0
+```
+
+because age does not exist.
+
+---
+
+### One-Line Notes
+
+```text
+sorted()             → Sort data
+
+data.values()        → Get all records
+
+lambda x             → One record at a time
+
+x.get(sort_by, 0)    → Get height/weight/bmi value
+
+0                    → Return 0 if field not found
+
+key=                 → Decide which field to sort by
+
+reverse=True         → Descending
+
+reverse=False        → Ascending
+```
+
+### Memory Trick
+
+```text
+x = current record
+
+lambda x: x.get("height", 0)
+
+means
+
+"Take each record and return its height."
+```
+
+That's why Python can sort records by height, weight, or BMI depending on the value stored in `sort_by`.
+ 
+#-----------------------------------------
+
+The `sorted()` function has this syntax:
+
+```python
+sorted(iterable, key=None, reverse=False)
+```
+
+### 1. `iterable` (Required)
+
+The data you want to sort.
+
+```python
+numbers = [5, 2, 8, 1]
+
+sorted(numbers)
+```
+
+---
+
+### 2. `key` (Optional)
+
+Tells Python **what value to use for sorting**.
+
+```python
+students = [
+    {"name": "Ali", "marks": 75},
+    {"name": "Ahmed", "marks": 90}
+]
+
+sorted(
+    students,
+    key=lambda x: x["marks"]
+)
+```
+
+Python sorts using marks.
+
+---
+
+### 3. `reverse` (Optional)
+
+Controls sorting direction.
+
+```python
+sorted(numbers, reverse=False)
+```
+
+Ascending:
+
+```text
+1 2 5 8
+```
+
+```python
+sorted(numbers, reverse=True)
+```
+
+Descending:
+
+```text
+8 5 2 1
+```
+
+---
+
+## Your Example
+
+```python
+sorted_data = sorted(
+    data.values(),
+    key=lambda x: x.get(sort_by, 0),
+    reverse=sort_order
+)
+```
+
+### Parameter Breakdown
+
+```python
+data.values()
+```
+
+➡ **iterable** (what to sort)
+
+---
+
+```python
+key=lambda x: x.get(sort_by, 0)
+```
+
+➡ **key** (sort by height, weight, bmi, etc.)
+
+---
+
+```python
+reverse=sort_order
+```
+
+➡ **reverse** (ascending or descending)
+
+---
+
+## Easy Notes
+
+```text
+sorted(iterable, key=None, reverse=False)
+
+iterable -> Data to sort
+
+key      -> Sort based on this value
+
+reverse  -> Sorting direction
+
+False    -> Ascending
+
+True     -> Descending
+```
+
+### Memory Trick
+
+```text
+sorted(
+    WHAT to sort,
+    HOW to sort,
+    WHICH direction
+)
+```
+
+or
+
+```text
+sorted(
+    iterable,
+    key,
+    reverse
+)
+```
+
+These are the three parameters you'll use 99% of the time in FastAPI/Python projects.

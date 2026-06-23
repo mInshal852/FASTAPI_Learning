@@ -60,7 +60,7 @@ nammme = p1.model_dump(include="Name")
 print(nammme)
 
 # now if u want to exclude name and keep every thing
-exnme = p1.model_dump(exclude="Name")
+exnme = p1.model_dump(exclude={"Name"})
 print(exnme)
 
 
@@ -72,3 +72,61 @@ print(exstate)
 #  now if u don't want to include the value which is not set by user, and you don't want default value to get export then:
 exdefault = p1.model_dump(exclude_unset=True)
 print(exdefault)
+
+
+
+
+#################################}|
+### Why `["state"]` and not `"state"`?
+
+# Because Pydantic expects a **list of fields** to exclude from the nested object.
+
+# Example:
+
+# ```python
+# exclude = {
+#     "address": ["state"]
+# }
+# ```
+
+# Meaning:
+
+# ```text
+# address -> nested object
+# ["state"] -> fields to remove from address
+# ```
+
+# Later you can exclude multiple fields:
+
+# ```python
+# exclude = {
+#     "address": ["state", "city"]
+# }
+# ```
+
+# Meaning:
+
+# ```text
+# Go inside address
+# Remove:
+# - state
+# - city
+# ```
+
+# ### Easy Formula
+
+# ```python
+# {
+#     "nested_object": [fields_to_exclude]
+# }
+# ```
+
+# Example:
+
+# ```python
+# {
+#     "address": ["state"]
+# }
+# ```
+
+# ➡ Go inside `address` and exclude `state`.
