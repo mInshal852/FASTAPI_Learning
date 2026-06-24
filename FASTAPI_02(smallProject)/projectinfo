@@ -472,3 +472,175 @@ So Annotated means:
 
 "Take this type and annotate (attach notes to) it."
 # __________________________________________________
+Note that  when we used Field in pydantic the Field(...) means the field is compulsory to enter if not given the pydantic will raise an error.
+
+Yes bro, you're understanding it correctly. 👍
+
+Let's break it down.
+
+### Case 1: Required Field
+
+```python
+name: str = Field(...)
+```
+
+The `...` means:
+
+> "I don't have a default value. User must provide one."
+
+If the user doesn't send `name`:
+
+```json
+{}
+```
+
+❌ Validation Error
+
+---
+
+### Case 2: Default Value
+
+```python
+name: str = Field(default="Ali")
+```
+
+If the user sends:
+
+```json
+{}
+```
+
+Pydantic automatically does:
+
+```python
+name = "Ali"
+```
+
+So the model becomes:
+
+```json
+{
+  "name": "Ali"
+}
+```
+
+✅ No error
+
+---
+
+### Case 3: Default None
+
+```python
+name: Optional[str] = Field(default=None)
+```
+
+If the user sends:
+
+```json
+{}
+```
+
+Pydantic automatically does:
+
+```python
+name = None
+```
+
+So the model becomes:
+
+```python
+{
+    "name": None
+}
+```
+
+✅ No error
+
+---
+
+### The key idea
+
+A field can be in one of two states:
+
+#### No default value
+
+```python
+Field(...)
+```
+
+Pydantic says:
+
+> "I don't know what value to use, so the user must provide one."
+
+#### Default value exists
+
+```python
+Field(default="Ali")
+```
+
+or
+
+```python
+Field(default=None)
+```
+
+Pydantic says:
+
+> "No problem. If the user doesn't send anything, I'll use this value."
+
+---
+
+### One small thing about `Optional`
+
+Many beginners think:
+
+```python
+name: Optional[str]
+```
+
+means the field is optional.
+
+It does **not**.
+
+It means:
+
+> "The value can be a string OR None."
+
+The field can still be required.
+
+For example:
+
+```python
+name: Optional[str] = Field(...)
+```
+
+User must send `name`, but it can be:
+
+```json
+{
+  "name": null
+}
+```
+
+✅ Valid
+
+or
+
+```json
+{
+  "name": "Inshal"
+}
+```
+
+✅ Valid
+
+but
+
+```json
+{}
+```
+
+❌ Invalid (field missing)
+
+That's the subtle difference that trips up a lot of people when they first learn Pydantic.
+# ________________________________________________

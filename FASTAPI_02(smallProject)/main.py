@@ -170,3 +170,81 @@ def save_data(data):
         json.dump(data, f)
 
     # When the 'with' block ends, the file is automatically closed.
+
+
+# Now we will implement the UPDATE (PUT) and DELETE operations.
+
+# For UPDATE, we want to allow the user to:
+# 1. Update all fields, or
+# 2. Update only specific fields.
+
+# The existing Patient model cannot be used because most fields
+# are required. If the user wants to update only one field,
+# validation will fail.
+
+# Therefore, we create a separate Pydantic model where all fields
+# are optional, allowing partial updates.
+
+# also see the image in "images" folder before seeing the code below
+
+
+class PatientUpdate(BaseModel):
+    # id is not added here because it comes in path parameter.
+    name: Annotated[
+        Optional[str],
+        Field(default=None),
+    ]
+    city: Annotated[Optional[str], Field(default=None)]
+    age: Annotated[Optional[int], Field(default=None, strict=True, gt=0, lt=120)]
+    gender: Annotated[Optional[Literal["male", "female"]], Field(default=None)]
+    height: Optional[float] = Field(default=None, strict=True, gt=0)
+    weight: Optional[float] = Field(default=None, strict=True, gt=0)
+
+
+@app.put("/edit/{patient_id}")
+def update_patient(patient_id: str, patient_update: PatientUpdate):
+    data = load_data()
+    if patient_id not in data:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    exisiting_pat_info = data[patient_id]
+
+    # first convert in the patient_update into dictionary
+    updated = patient_update.model_dump(
+        exclude_unset=True
+    )  # to include the values which is set by the user
+
+    for key, value in updated.items():
+        exisiting_pat_info[key] = value
+
+    # as in case of if specific field like weight or height are updated or all fields are updated then bmi and verdict should also be updated, so for this you have to implement the logic
+
+    # logic for this process: exisiting_pat_info ->  pydantic object of Patient class -> updated bmi + verdict -> pydantic object -> dict then save it.
+    exisiting_pat_info["id"] = patient_id
+    pat = Patient(**exisiting_pat_info)
+    updated_pat_withAllInfo = pat.model_dump(exclude="id")
+    data[patient_id] = updated_pat_withAllInfo
+
+    save_data(data)
+    return JSONResponse(
+        status_code=200, content="Patients fields udpated successfully."
+    )
+
+
+# now the delete process
+@app.delete("/delete/{patient_id}")
+def delete_patient(
+    patient_id: str = Path(
+        ...,
+        description="Enter patient id to delete the patient",
+        example="P001",
+        title="Delete Patiens",
+    )
+):
+    data = load_data()
+    if patient_id not in data:
+        raise HTTPException(status_code=404, detail="Patient not found.")
+
+    del data[patient_id]
+    save_data(data)
+    return JSONResponse(status_code=200, content="Patient deleted successfully.")
