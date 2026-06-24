@@ -2,6 +2,7 @@ from fastapi import FastAPI, Path, HTTPException, Query
 from pydantic import BaseModel, Field, computed_field
 from typing import Annotated, Optional, Literal
 import json
+from fastapi.responses import JSONResponse
 
 app = FastAPI()
 
@@ -102,22 +103,70 @@ class Patient(BaseModel):
     weight: float = Field(
         ..., description="Enter values greater then zero", strict=True, gt=0
     )
-    # now verdict and bmi will not be given by user it will be computed by us
-    computed_field()
 
+    # now verdict and bmi will not be given by user it will be computed by us
+    @computed_field()
     @property
     def bmi(self) -> float:
-        return round((self.weight / (self.height) ** 2), 2)
+        bmi = round((self.weight / (self.height) ** 2), 2)
+        return bmi
 
-    computed_field()
-
+    @computed_field()
     @property
     def verdict(self) -> str:
+        verdict = ""
         if self.bmi < 18.5:
-            return "Underweight"
+            verdict = "Underweight"
         elif self.bmi >= 18.5 and self.bmi <= 24.9:
-            return "Normalweight"
+            verdict = "Normalweight"
         elif self.bmi >= 25.0 and self.bmi <= 29.9:
-            return "Overweight"
+            verdict = "Overweight"
         else:
-            return "Obese"
+            verdict = "Obese"
+        return verdict
+
+
+# now we will design our endpoint, which will be using data from the request body with the help of this pydantic model
+
+
+@app.post(  # try it in from fastAPI docs
+    "/create"
+)  # all the data coming from the request body will be directly given to our pydantic model for further validation.
+def create_patient(patient: Patient):
+
+    # load existing data
+    data = load_data()
+    print(data)
+    # check if the patiend_id already exists
+
+    patient.id = patient.id.upper()
+
+    if patient.id in data:
+        raise HTTPException(400, detail="patient already exists")
+    # new patient added to json file
+
+    # now the 'patient' is a Patient object we have to convert it into python dictionary
+    print(patient)
+    data[patient.id] = patient.model_dump(exclude="id")
+
+    # save into the json file
+    save_data(data)
+
+    # now to tell patient the work has been done, what you will do is send a json response
+    return JSONResponse(
+        status_code=201, content={"message": "Patient created successfully."}
+    )
+
+
+def save_data(data):
+    # Open the file "patients.json" in write ("w") mode.
+    # If the file already exists, its old contents will be overwritten.
+    # If the file does not exist, Python will create it.
+    with open("patients.json", "w") as f:
+
+        # Convert the Python object stored in 'data'
+        # (e.g., a dictionary or list) into JSON format
+        # and write it into the file represented by 'f'.
+        json.dump(data, f)
+
+    # When the 'with' block ends, the file is automatically closed.
