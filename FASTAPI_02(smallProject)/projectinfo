@@ -368,3 +368,107 @@ sorted(
 ```
 
 These are the three parameters you'll use 99% of the time in FastAPI/Python projects.
+
+###__________________________________________
+### Original Definition (from image)
+
+> A request body is the portion of an HTTP request that contains data sent by the client to the server. It is typically used in HTTP methods such as POST or PUT to transmit structured data (e.g., JSON, XML, form-data) for the purpose of creating or updating resources on the server. The server parses the request body to extract the necessary information and perform the intended operation.
+
+---
+
+### Simple Words (No Information Removed)
+
+> A **request body** is the part of an **HTTP request** that contains data sent from the **client** to the **server**. It is commonly used with **POST** and **PUT** requests to send structured data such as **JSON**, **XML**, or **form-data**. This data is used to **create** new resources or **update** existing resources on the server. The server reads (parses) the request body, extracts the required information, and then performs the requested operation.
+
+### Example
+
+Request:
+
+```http
+POST /patients
+```
+
+Request Body:
+
+```json
+{
+    "name": "Ali",
+    "age": 22,
+    "city": "Lahore"
+}
+```
+
+Meaning:
+
+```text
+Client sends data to server
+        ↓
+Data is inside the Request Body
+        ↓
+Server reads the data
+        ↓
+Server creates/updates the resource
+```
+
+#### __________________________________________________
+In Python, Literal means:
+
+"This variable can only have these exact values."
+
+For example:
+
+from typing import Literal
+
+gender: Literal["male", "female"]
+
+This tells Python tools and Pydantic:
+
+"gender must be exactly 'male' or 'female'. Nothing else is allowed."
+
+Think of it like a whitelist.
+
+Without Literal
+gender: str
+
+Any string is allowed:
+
+"male"      # ✅
+"female"    # ✅
+"cat"       # ✅
+"hello"     # ✅
+"123"       # ✅
+
+### ____________________________________________
+This is a very good question because many people use Annotated without really understanding why.
+
+Think of it this way:
+
+Without Annotated
+
+You only tell Python the type.
+
+age: int
+
+This means:
+
+"age must be an integer."
+
+Nothing more.
+
+With Annotated
+
+You tell Python the type plus some extra information (metadata).
+
+from typing import Annotated
+
+age: Annotated[int, "must be positive"]
+
+Here:
+
+int = the actual type
+"must be positive" = extra information attached to the type
+
+So Annotated means:
+
+"Take this type and annotate (attach notes to) it."
+# __________________________________________________
