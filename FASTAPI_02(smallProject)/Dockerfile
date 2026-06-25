@@ -130,3 +130,77 @@ CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8005"]
 # means:
 
 # > "Start my FastAPI app, listen on all network interfaces, and use door number 8000."
+# 
+# This line:
+
+# ```dockerfile
+# CMD ["uvicorn","main:app","--host","0.0.0.0","--port","8005"]
+# ```
+
+# means:
+
+# * Start Uvicorn when the container starts.
+# * Listen on **port 8005 inside the container**.
+# * Listen on **all network interfaces** (`0.0.0.0`).
+
+# ### Without port mapping
+
+# If you run:
+
+# ```bash
+# docker run muhammadinshal1/ptms:v1
+# ```
+
+# the application is running on port **8005 inside the container**, but Docker does **not expose it to your host machine**.
+
+# So:
+
+# ```text
+# Host Machine     ❌ cannot access
+#       |
+#       v
+# Container:8005   ✅ running
+# ```
+
+# You can verify the container is running:
+
+# ```bash
+# docker ps
+# ```
+
+# but opening:
+
+# ```text
+# http://localhost:8005
+# ```
+
+# will not work because no port is published.
+
+# ---
+
+# ### With port mapping
+
+# ```bash
+# docker run -p 2000:8005 muhammadinshal1/ptms:v1
+# ```
+
+# Now:
+
+# ```text
+# Host:2000  --->  Container:8005
+# ```
+
+# and you can access:
+
+# ```text
+# http://localhost:2000
+# ```
+
+# ---
+
+# ### Think of it this way
+
+# * `--port 8005` in `CMD` = **which port the app uses inside the container**.
+# * `-p 2000:8005` in `docker run` = **which host port is connected to that container port**.
+
+# The two are independent. A container can run perfectly fine on port 8005 even if you never publish that port to the outside world.
